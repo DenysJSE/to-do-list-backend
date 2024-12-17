@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name     String
+  email    String @unique
+  password String
+
+  categories UserCategory[]
+  tasks      UserTask[]
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  title String
+  // icon String
+
+  isFavorite Boolean   @default(false)
+  color      ColorEnum @default(SteelGray)
+
+  users UserCategory[]
+  tasks TaskCategory[]
+}
+
+model UserCategory {
+  userId     Int @map("user_id")
+  categoryId Int @map("category_id")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([userId, categoryId])
+}
+
+model Task {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  title       String
+  description String
+
+  priority Priority
+  isDone   Boolean  @default(false)
+
+  // timeRange
+
+  subtasks   Subtask[]
+  users      UserTask[]
+  categories TaskCategory[]
+}
+
+model Subtask {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  title  String
+  isDone Boolean @default(false)
+
+  task   Task @relation(fields: [taskId], references: [id])
+  taskId Int  @map("task_id")
+}
+
+model TaskCategory {
+  taskId     Int @map("task_id")
+  categoryId Int @map("category_id")
+
+  task     Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, categoryId])
+}
+
+model UserTask {
+  taskId Int @map("task_id")
+  userId Int @map("user_id")
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, userId])
+}
+
+enum ColorEnum {
+  BlushPink
+  CoralRed
+  AmberGold
+  OceanBlue
+  EmeraldGreen
+  SapphireBlue
+  LavenderPurple
+  SunsetOrange
+  MintGreen
+  CrimsonRed
+  SteelGray
+  SlateBlue
+  Rosewood
+  IvoryWhite
+  ChocolateBrown
+  ForestGreen
+  SkyBlue
+  GoldenYellow
+  MidnightBlack
+  PeachPink
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
