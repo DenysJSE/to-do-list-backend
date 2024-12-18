@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import {
+	BadRequestException,
+	ForbiddenException,
+	Injectable
+} from '@nestjs/common'
 import { PrismaService } from '../prisma.service'
 import { CategoryDto } from './dto/category.dto'
 import { UpdateCategoryDto } from './dto/update.category'
@@ -40,14 +44,12 @@ export class CategoryService {
 	}
 
 	async getAllCategoriesForUser(userId: number) {
-		const id = checkIdIsNumber(userId)
-
-		await this.userService.getUserById(id)
+		await this.userService.getUserById(userId)
 
 		return this.prisma.category.findMany({
 			where: {
 				users: {
-					some: { userId: id }
+					some: { userId }
 				}
 			}
 		})
@@ -69,7 +71,7 @@ export class CategoryService {
 		categoryId: number,
 		updateCategoryDto: UpdateCategoryDto
 	) {
-		const id = checkIdIsNumber(categoryId)
+		await this.getCategoryById(categoryId)
 
 		const category = await this.prisma.userCategory.findUnique({
 			where: {
@@ -81,12 +83,12 @@ export class CategoryService {
 		})
 
 		if (!category)
-			throw new BadRequestException(
+			throw new ForbiddenException(
 				'You are not authorized to update this category!'
 			)
 
 		return this.prisma.category.update({
-			where: { id },
+			where: { id: categoryId },
 			data: {
 				title: updateCategoryDto.title,
 				color: updateCategoryDto.color
@@ -95,50 +97,50 @@ export class CategoryService {
 	}
 
 	async deleteCategory(userId: number, categoryId: number) {
-		const id = checkIdIsNumber(categoryId)
+		await this.getCategoryById(categoryId)
 
 		const category = await this.prisma.userCategory.findUnique({
 			where: {
 				userId_categoryId: {
 					userId,
-					categoryId: id
+					categoryId
 				}
 			}
 		})
 
 		if (!category) {
-			throw new BadRequestException(
+			throw new ForbiddenException(
 				'You are not authorized to delete this category.'
 			)
 		}
 
 		await this.prisma.category.delete({
-			where: { id }
+			where: { id: categoryId }
 		})
 
 		return { message: 'The category was deleted successfully!' }
 	}
 
 	async addCategoryToFavorite(userId: number, categoryId: number) {
-		const id = checkIdIsNumber(categoryId)
+		await this.getCategoryById(categoryId)
 
 		const category = await this.prisma.userCategory.findUnique({
 			where: {
 				userId_categoryId: {
 					userId,
-					categoryId: id
+					categoryId
 				}
 			}
 		})
 
 		if (!category) {
-			throw new BadRequestException(
+			throw new ForbiddenException(
 				'You are not authorized to update this category.'
 			)
 		}
 
 		return this.prisma.category.update({
-			where: { id },
+			where: { id: categoryId },
 			data: {
 				isFavorite: true
 			}

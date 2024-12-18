@@ -33,9 +33,9 @@ export class CategoryController {
 		return this.categoryService.getCategoryById(+id)
 	}
 
-	@Get('by-user/:user_id')
+	@Get('by-user')
 	@Auth()
-	getAllByUser(@Param('user_id') userId: string) {
+	getAllByUser(@CurrentUser('id') userId: string) {
 		return this.categoryService.getAllCategoriesForUser(+userId)
 	}
 

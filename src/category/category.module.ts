@@ -7,6 +7,7 @@ import { UserModule } from '../user/user.module'
 @Module({
 	imports: [UserModule],
 	controllers: [CategoryController],
-	providers: [CategoryService, PrismaService]
+	providers: [CategoryService, PrismaService],
+	exports: [CategoryService]
 })
 export class CategoryModule {}
