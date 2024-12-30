@@ -8,6 +8,7 @@ import { CategoryDto } from './dto/category.dto'
 import { UpdateCategoryDto } from './dto/update.category'
 import { checkIdIsNumber } from '../utils/id-is-number'
 import { UserService } from '../user/user.service'
+import { returnCategoryObject } from './return-category.object'
 
 @Injectable()
 export class CategoryService {
@@ -35,7 +36,8 @@ export class CategoryService {
 		const id = checkIdIsNumber(categoryId)
 
 		const category = await this.prisma.category.findUnique({
-			where: { id }
+			where: { id },
+			select: returnCategoryObject
 		})
 		if (!category)
 			throw new BadRequestException('The category with such id was not found!')
@@ -51,7 +53,9 @@ export class CategoryService {
 				users: {
 					some: { userId }
 				}
-			}
+			},
+			select: returnCategoryObject,
+			orderBy: { createdAt: 'asc' }
 		})
 	}
 
@@ -62,7 +66,9 @@ export class CategoryService {
 					some: { userId }
 				},
 				isFavorite: true
-			}
+			},
+			select: returnCategoryObject,
+			orderBy: { createdAt: 'asc' }
 		})
 	}
 

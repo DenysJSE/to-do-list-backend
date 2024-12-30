@@ -59,6 +59,15 @@ export class TaskController {
 		return this.taskService.markTaskAsDone(+userId, +taskId)
 	}
 
+	@Patch('incomplete-task/:task_id')
+	@Auth()
+	markTaskAsUndone(
+		@Param('task_id') taskId: string,
+		@CurrentUser('id') userId: string
+	) {
+		return this.taskService.markTaskAsUndone(+userId, +taskId)
+	}
+
 	@Put(':taskId')
 	@Auth()
 	update(
@@ -117,5 +126,14 @@ export class TaskController {
 		@CurrentUser('id') userId: string
 	) {
 		return this.taskService.markSubtaskAdDone(+userId, +subtaskId)
+	}
+
+	@Get('done-tasks/:category_id')
+	@Auth()
+	getUserDoneTasksByCategory(
+		@Param('category_id') categoryId: string,
+		@CurrentUser('id') userId: string
+	) {
+		return this.taskService.getUserDoneTasksByCategory(+userId, +categoryId)
 	}
 }

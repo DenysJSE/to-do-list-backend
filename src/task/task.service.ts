@@ -11,6 +11,7 @@ import { UserService } from '../user/user.service'
 import { CategoryService } from '../category/category.service'
 import { SubtaskDto } from './dto/subtask.dto'
 import { UpdateSubtaskDto } from './dto/update-subtask.dto'
+import { returnTaskObject } from './return-task.object'
 
 @Injectable()
 export class TaskService {
@@ -69,7 +70,8 @@ export class TaskService {
 		const id = checkIdIsNumber(taskId)
 
 		const task = await this.prisma.task.findUnique({
-			where: { id }
+			where: { id },
+			select: returnTaskObject
 		})
 
 		if (!task)
@@ -86,7 +88,9 @@ export class TaskService {
 				users: {
 					some: { userId }
 				}
-			}
+			},
+			select: returnTaskObject,
+			orderBy: [{ isDone: 'asc' }, { createdAt: 'asc' }]
 		})
 	}
 
@@ -115,7 +119,9 @@ export class TaskService {
 						categoryId
 					}
 				}
-			}
+			},
+			select: returnTaskObject,
+			orderBy: [{ isDone: 'asc' }, { createdAt: 'asc' }]
 		})
 	}
 
@@ -163,6 +169,10 @@ export class TaskService {
 				'You are not authorized to delete this task!'
 			)
 
+		await this.prisma.subtask.deleteMany({
+			where: { taskId }
+		})
+
 		await this.prisma.task.delete({
 			where: { id: taskId }
 		})
@@ -194,6 +204,34 @@ export class TaskService {
 
 		return {
 			message: `Task was completed!'}.`,
+			task
+		}
+	}
+
+	async markTaskAsUndone(userId: number, taskId: number) {
+		await this.getById(taskId)
+
+		const userTask = await this.prisma.userTask.findUnique({
+			where: {
+				taskId_userId: {
+					userId,
+					taskId
+				}
+			}
+		})
+
+		if (!userTask)
+			throw new ForbiddenException(
+				'You are not authorized to update this task.'
+			)
+
+		const task = await this.prisma.task.update({
+			where: { id: taskId },
+			data: { isDone: false }
+		})
+
+		return {
+			message: `Task was uncompleted!'}.`,
 			task
 		}
 	}
@@ -246,7 +284,8 @@ export class TaskService {
 		return this.prisma.subtask.findMany({
 			where: {
 				taskId
-			}
+			},
+			orderBy: { createdAt: 'asc' }
 		})
 	}
 
@@ -339,6 +378,17 @@ export class TaskService {
 		return this.prisma.subtask.update({
 			where: { id: subtaskId },
 			data: { isDone: true }
+		})
+	}
+
+	async getUserDoneTasksByCategory(userId: number, categoryId: number) {
+		await this.categoryService.getCategoryById(categoryId)
+		await this.userService.getUserById(userId)
+
+		return this.prisma.task.findMany({
+			where: {
+				isDone: true
+			}
 		})
 	}
 }
