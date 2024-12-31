@@ -66,4 +66,13 @@ export class CategoryController {
 	addToFavorite(@Param('id') id: string, @CurrentUser('id') userId: string) {
 		return this.categoryService.addCategoryToFavorite(+userId, +id)
 	}
+
+	@Patch('remove/:id')
+	@Auth()
+	removeFromFavorite(
+		@Param('id') id: string,
+		@CurrentUser('id') userId: string
+	) {
+		return this.categoryService.removeCategoryFromFavorite(+userId, +id)
+	}
 }

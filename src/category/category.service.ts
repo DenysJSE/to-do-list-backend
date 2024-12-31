@@ -152,4 +152,30 @@ export class CategoryService {
 			}
 		})
 	}
+
+	async removeCategoryFromFavorite(userId: number, categoryId: number) {
+		await this.getCategoryById(categoryId)
+
+		const category = await this.prisma.userCategory.findUnique({
+			where: {
+				userId_categoryId: {
+					userId,
+					categoryId
+				}
+			}
+		})
+
+		if (!category) {
+			throw new ForbiddenException(
+				'You are not authorized to update this category.'
+			)
+		}
+
+		return this.prisma.category.update({
+			where: { id: categoryId },
+			data: {
+				isFavorite: false
+			}
+		})
+	}
 }
