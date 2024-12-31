@@ -128,6 +128,15 @@ export class TaskController {
 		return this.taskService.markSubtaskAdDone(+userId, +subtaskId)
 	}
 
+	@Patch('incomplete-subtask/:subtask_id')
+	@Auth()
+	markSubtaskAsUndone(
+		@Param('subtask_id') subtaskId: string,
+		@CurrentUser('id') userId: string
+	) {
+		return this.taskService.markSubtaskAdUndone(+userId, +subtaskId)
+	}
+
 	@Get('done-tasks/:category_id')
 	@Auth()
 	getUserDoneTasksByCategory(

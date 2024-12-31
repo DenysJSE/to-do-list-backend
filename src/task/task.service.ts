@@ -202,6 +202,11 @@ export class TaskService {
 			data: { isDone: true }
 		})
 
+		await this.prisma.subtask.updateMany({
+			where: { taskId },
+			data: { isDone: true }
+		})
+
 		return {
 			message: `Task was completed!'}.`,
 			task
@@ -285,7 +290,7 @@ export class TaskService {
 			where: {
 				taskId
 			},
-			orderBy: { createdAt: 'asc' }
+			orderBy: [{ isDone: 'asc' }, { createdAt: 'asc' }]
 		})
 	}
 
@@ -378,6 +383,35 @@ export class TaskService {
 		return this.prisma.subtask.update({
 			where: { id: subtaskId },
 			data: { isDone: true }
+		})
+	}
+
+	async markSubtaskAdUndone(userId: number, subtaskId: number) {
+		const subtask = await this.prisma.subtask.findUnique({
+			where: { id: subtaskId },
+			include: {
+				task: {
+					include: {
+						users: true
+					}
+				}
+			}
+		})
+
+		if (!subtask)
+			throw new NotFoundException('The subtask with such id was not found!')
+
+		if (
+			!subtask ||
+			!subtask.task.users.some(userTask => userTask.userId === userId)
+		)
+			throw new ForbiddenException(
+				'You are not authorized to update this subtask.'
+			)
+
+		return this.prisma.subtask.update({
+			where: { id: subtaskId },
+			data: { isDone: false }
 		})
 	}
 
