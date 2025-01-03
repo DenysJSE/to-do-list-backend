@@ -56,7 +56,7 @@ export class TaskController {
 		@Param('task_id') taskId: string,
 		@CurrentUser('id') userId: string
 	) {
-		return this.taskService.markTaskAsDone(+userId, +taskId)
+		return this.taskService.toggleTaskStatus(+userId, +taskId, 'done')
 	}
 
 	@Patch('incomplete-task/:task_id')
@@ -65,7 +65,7 @@ export class TaskController {
 		@Param('task_id') taskId: string,
 		@CurrentUser('id') userId: string
 	) {
-		return this.taskService.markTaskAsUndone(+userId, +taskId)
+		return this.taskService.toggleTaskStatus(+userId, +taskId, 'undone')
 	}
 
 	@Put(':taskId')
@@ -125,7 +125,7 @@ export class TaskController {
 		@Param('subtask_id') subtaskId: string,
 		@CurrentUser('id') userId: string
 	) {
-		return this.taskService.markSubtaskAdDone(+userId, +subtaskId)
+		return this.taskService.toggleSubtaskStatus(+userId, +subtaskId, 'done')
 	}
 
 	@Patch('incomplete-subtask/:subtask_id')
@@ -134,7 +134,7 @@ export class TaskController {
 		@Param('subtask_id') subtaskId: string,
 		@CurrentUser('id') userId: string
 	) {
-		return this.taskService.markSubtaskAdUndone(+userId, +subtaskId)
+		return this.taskService.toggleSubtaskStatus(+userId, +subtaskId, 'undone')
 	}
 
 	@Get('done-tasks/:category_id')
